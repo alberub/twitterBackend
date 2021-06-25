@@ -7,14 +7,13 @@ const app = express();
 
 app.use( cors() );
 
+app.use( express.json() );
+
 dbConnection();
 
-app.get( '/', (req, res) => {
-    res.json({
-        ok: true,
-        msg: 'Hola mundo'
-    })
-});
+app.use( '/api/usuarios', require('./routes/usuarios') );
+
+app.use( '/api/login', require('./routes/auth') );
 
 app.listen( process.env.PORT, () => {
     console.log('Servidor corriendo en puerto' + process.env.PORT);
