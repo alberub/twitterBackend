@@ -30,7 +30,7 @@ app.use( '/api/login', require('./routes/auth') );
 app.use( '/api/upload', require('./routes/uploads') );
 
 app.get( '*', ( req, res ) => {
-    res.sendFile( path.resolve(__dirname, 'public/index.html') )
+    res.sendFile( path.resolve(__dirname, './public/index.html') )
 });
 
 app.listen( process.env.PORT, () => {
