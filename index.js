@@ -4,8 +4,17 @@ require( 'dotenv' ).config();
 const path = require('path');
 const cors = require('cors');
 const { dbConnection } = require('./database/config');
+const { socketController } = require('./sockets/controller')
 
 const app = express();
+const server = require('http').createServer(app);
+
+const io = require('socket.io')(server,{
+    cors:{
+        origin: true,
+        credentials: true
+    }
+});
 
 app.use( cors() );
 
@@ -17,15 +26,17 @@ dbConnection();
 
 app.use(express.static('public')); 
 
-app.use( '/api/usuarios', require('./routes/usuarios') );
+app.use( '/api/users', require('./routes/users') );
 
-app.use( '/api/hospitales', require('./routes/hospitales') );
+app.use( '/api/tweets', require('./routes/tweets') );
 
-app.use( '/api/medicos', require('./routes/medicos') );
+app.use( '/api/chats', require('./routes/chats') );
 
-app.use( '/api/todo', require('./routes/busquedas') );
+app.use( '/api/followings', require('./routes/followings') )
 
 app.use( '/api/login', require('./routes/auth') );
+
+app.use( '/api/search', require('./routes/busqueda') );
 
 app.use( '/api/upload', require('./routes/uploads') );
 
@@ -33,6 +44,13 @@ app.get( '*', ( req, res ) => {
     res.sendFile( path.resolve(__dirname, './public/index.html') )
 });
 
-app.listen( process.env.PORT, () => {
-    console.log('Servidor corriendo en puerto' + process.env.PORT);
+// function sockets(){
+
+    io.on('connection', ( socket ) => socketController( socket, io))
+    
+// }
+
+
+server.listen( process.env.PORT, () => {
+    console.log('Servidor ( server - socket io ) corriendo en puerto' + process.env.PORT);
 });

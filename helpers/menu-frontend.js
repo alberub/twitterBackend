@@ -7,7 +7,7 @@ const getMenu = ( role = 'user_role') => {
           submenu: [
             { titulo: 'Main', url: '/' },
             { titulo: 'ProgressBar', url: 'progress' },
-            { titulo: 'Graficas', url: 'grafica1' },
+            { titulo: 'Graficas', url: 'graficas' },
             { titulo: 'Promesas', url: 'promesas' },
             { titulo: 'Rxjs', url:'rxjs' }
           ]
@@ -18,8 +18,8 @@ const getMenu = ( role = 'user_role') => {
           icono: 'mdi mdi-folder-lock-open',
           submenu: [
             // { titulo: 'Usuarios', url: 'usuarios' },
-            { titulo: 'Hospitales', url: 'hospitales' },
             { titulo: 'Medicos', url: 'medicos' },
+            { titulo: 'Hospitales', url: 'hospitales' }
           ]
         }
     

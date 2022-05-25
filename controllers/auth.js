@@ -1,9 +1,7 @@
 const { response } = require( 'express');
 const bcrypt = require('bcryptjs');
-const Usuario = require('../models/usuario');
+const User = require('../models/user');
 const { generarJWT } = require('../helpers/jwt');
-const { googleVerify } = require('../helpers/google.verify');
-const { getMenu } = require('../helpers/menu-frontend');
 
 const login = async( req, res = response ) => {
 
@@ -13,13 +11,13 @@ const login = async( req, res = response ) => {
 
         // Verificar email
 
-        const usuarioDB = await Usuario.findOne({email});
+        const usuarioDB = await User.findOne({email});
 
-        if(!usuarioDB) {
+        if( !usuarioDB ) {
             return res.status(404).json({
                 ok: false,
                 msg:'El usuario y/o contrasena no coinciden'
-            })
+            });
         }
 
         // Verificar contrasena
@@ -28,7 +26,7 @@ const login = async( req, res = response ) => {
         if( !validPassword ){
             return res.status(400).json({
                 ok: false,
-                msg: 'Contrasena no valida'
+                msg: 'El usuario y/o contrasena no coinciden'
             });
         }
         
@@ -39,70 +37,16 @@ const login = async( req, res = response ) => {
         res.json({
             ok: true,
             token,
-            menu: getMenu( usuarioDB.role )
+            msg:'Mensaje de login'
         });
         
-    } catch (error) {
-        console.log(error);
-        response.status(500).json({
-            ok:false,
-            msg:'Error inesperado, hable con el administrador'
-        })
-    }
-
-}
-
-const googleSignIn = async( req, res = response ) => {
-
-    const googleToken = req.body.token;
-
-    try {
-
-        const { name, email, picture } = await googleVerify( googleToken );
-
-        // Verificar si existe usuario con mismo email
-
-        const usuarioDB = await Usuario.findOne({ email });
-        let usuario;
-
-        if( !usuarioDB ){
-            usuario = new Usuario({
-                nombre: name,
-                email,
-                password:'@@@',
-                img: picture,
-                google: true
-            })
-        } else {
-
-            // Existe el usuario
-            usuario = usuarioDB;
-            usuario.google = true;
-
+        } catch (error) {
+            console.log(error);
+            response.status(500).json({
+                ok:false,
+                msg:'Error inesperado, hable con el administrador'
+            });
         }
-
-        //  Guardar en la base de datos
-
-        await usuario.save();
-
-        // Generar JWT
-
-        const token = await generarJWT( usuario.id );
-        
-        res.json({
-            ok: true, 
-            token,
-            menu: getMenu( usuario.role )
-        });
-
-    } catch (error) {
-
-        res.status(401).json({
-            ok: false, 
-            msg: 'Token no es correcto'
-        });
-        
-    }
 
 }
 
@@ -114,14 +58,12 @@ const renewToken = async( req, res = response ) => {
 
     const token = await generarJWT( uid );
 
-    const usuario = await Usuario.findById(uid);
+    const usuario = await User.findById(uid);
 
     res.json({
         ok: true,
         token,
-        usuario,
-        menu: getMenu( usuario.role )
-
+        usuario
     });
 
 }
@@ -129,6 +71,5 @@ const renewToken = async( req, res = response ) => {
 
 module.exports = {
     login,
-    googleSignIn,
     renewToken
 }
