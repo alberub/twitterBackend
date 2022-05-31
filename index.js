@@ -3,11 +3,12 @@ require( 'dotenv' ).config();
 
 const path = require('path');
 const cors = require('cors');
+
 const { dbConnection } = require('./database/config');
 const { socketController } = require('./sockets/controller')
 
 const app = express();
-const server = require('http').createServer(app);
+const server = require('http').createServer( app );
 
 const io = require('socket.io')(server,{
     cors:{

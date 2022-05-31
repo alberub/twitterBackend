@@ -195,6 +195,12 @@ const borrarUsuario = async( req, res = response ) => {
 
 }
 
+const showWhoToFollow = async( req, res = response ) => {
+
+    const uid = req.uid;
+
+}
+
 module.exports = {
     getUsuarios,
     getUsuarioById,
