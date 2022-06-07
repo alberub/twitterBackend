@@ -94,7 +94,7 @@ const getChats = async( req, res = response ) => {
 
         const chats = await Chat.find({ "members": uid })
                                     .populate( 'members', 'img firstName lastName username createdAt followers followings' )
-                                    .populate( 'messages', 'message from createdAt' );
+                                    .populate( 'messages', 'message from createdAt readed');
 
         res.json({
             chats
@@ -146,17 +146,70 @@ const getMessages = async( req, res = response ) => {
 
 }
 
+const unreadChat = async( req, res = response ) => {
+
+    try {
+     
+        const chatId = req.params.chatId;
+        const chat = await Chat.findById( chatId );
+
+        chat.readed = false;
+
+        const updatedUnreadChat = await Chat.findByIdAndUpdate( chatId, chat, { new: true });
+
+        res.status(200).json({
+            ok: true,
+            chat: updatedUnreadChat
+        })
+
+    } catch (error) {
+        
+        res.status.json({
+            ok: false,
+            msg: 'chat not found'
+        })
+
+    }
+
+}
+
+const markAsSeen = async( req, res = response ) => {
+
+    try {
+
+        const chatId = req.params.chatId;
+        const chat = await Chat.findById( chatId );
+        const messageId = req.params.messageId;
+        const message = await Message.findById( messageId );
+
+        message.readed = true;
+        chat.readed = true;
+
+        const updatedMessage = await Message.findByIdAndUpdate( messageId, message, { new: true });
+        const updatedChat = await Chat.findByIdAndUpdate( chatId, chat, { new: true })
+
+        res.json({
+            ok: true,
+            updatedMsg: updatedMessage,
+            updatedChat: updatedChat
+        })
+
+    } 
+    
+    catch (error) {
+        return res.status(400).json({
+            ok: false,
+            msg:'message not found'
+        })
+    }
+
+}
+
 module.exports = {
     newChat,
     createMessages,
     getChats,
-    getMessages
+    getMessages,
+    markAsSeen,
+    unreadChat
 }
-
-
-// if ( !uid ) {
-    //     return res.status(404).json({
-    //         ok: false,
-    //         mag:'new chat error'
-    //     })
-    // }

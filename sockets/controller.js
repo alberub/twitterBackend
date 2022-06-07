@@ -7,31 +7,34 @@ const Chat = require("../models/chat");
 const chatMensajes = new ChatMensajes();
 
 const socketController = async(socket, io) => {
-    
 
     const user = await comprobarJWT( socket.handshake.headers['x-token'] );
 
     if( !user ){
+        console.log('desconectado, no se encuentra token');
         return socket.disconnect();
+    }
+
+    if (user) {
+        console.log('si existe usuario');
     }
     
     chatMensajes.conectarUsuario( user );
-    io.emit('usuarios-activos', chatMensajes.usersArr );
-    // console.log(chatMensajes.usersArr,'Aui');
-    // socket.emit('recibir-mensajes', chatMensajes.last10 );
+    io.emit('usuarios-activos', chatMensajes.usersArr, console.log(chatMensajes.usersArr[0].username ) );
 
     socket.join( user.id );
 
 
     socket.on('disconnect', () => {
         chatMensajes.desconectarUsuario( user.id );
-        io.emit('usuarios-activos', chatMensajes.usersArr);
+        io.emit( 'usuarios-activos', chatMensajes.usersArr );
+        console.log( user.id );
     });
 
     socket.on('enviar-mensaje', async({ uid, message, chatId }) => {
 
-        // socket.join( user.id ).emit('mensaje-privado', { de:user.id, message, chatId });
-
+        console.log(message);
+        
         if ( uid ) {
 
             const newMessage = new Message({ from: user.id, message });
@@ -42,7 +45,7 @@ const socketController = async(socket, io) => {
 
             chat.messages.push( msg._id );
 
-            await Chat.findByIdAndUpdate( chatId, chat, { new: true } );
+            await Chat.findByIdAndUpdate( chatId, chat, { new: true } );            
 
             socket.to( uid ).emit('mensaje-privado', { de:user.id, message, chatId, msg });
             io.to( user.id ).emit('myself', { de:user.id, message, chatId, msg });

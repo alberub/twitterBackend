@@ -47,7 +47,9 @@ app.get( '*', ( req, res ) => {
 
 // function sockets(){
 
-    io.on('connection', ( socket ) => socketController( socket, io))
+io.on('connection', ( socket ) => {
+    socketController( socket, io)
+});
     
 // }
 

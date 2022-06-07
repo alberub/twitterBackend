@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { newChat, createMessages, getChats, getMessages } = require('../controllers/chats');
+const { newChat, createMessages, getChats, getMessages, markAsSeen, unreadChat } = require('../controllers/chats');
 const { validarJWT } = require('../middlewares/validar-jwt');
 const { validarCampos } = require('../middlewares/validar-campos');
 
@@ -38,6 +38,22 @@ router.post('/getMessages/:id',
         validarCampos
     ]
     ,getMessages
+    );
+
+router.put( '/updateChat/:chatId/:messageId',
+    [
+        validarJWT,
+        validarCampos
+    ]
+    , markAsSeen
+    );
+
+router.put( '/unreadChat/:chatId',
+    [
+        validarJWT,
+        validarCampos
+    ]
+    , unreadChat
     );
 
 module.exports = router;

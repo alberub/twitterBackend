@@ -8,7 +8,11 @@ const ChatSchema = Schema({
     messages:[{
         type: Schema.Types.ObjectId,
         ref:'Message'
-    }]
+    }],
+    readed:{
+        type: Boolean,
+        default: false
+    },
 });
 
 ChatSchema.method('toJSON', function() {
