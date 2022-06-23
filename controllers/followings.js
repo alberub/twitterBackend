@@ -75,24 +75,33 @@ const addFollow = async( req, res = response) => {
             const find = usuarioAseguir.followers.indexOf( uid );
             usuarioAseguir.followers.splice( find, 1 );
 
+            const miUsuarioActualizado = await User.findByIdAndUpdate( uid, usuarioDB, { new: true } );
+            const usuarioAseguirActualizado = await User.findByIdAndUpdate( follow, usuarioAseguir, { new: true } );
+
+            res.json({
+                ok: false,
+                miUsuarioActualizado,
+                usuarioAseguirActualizado,
+                msg:`You unfollowed @${ usuarioAseguirActualizado.username }`
+            })
+
             
         } else {
 
             usuarioDB.followings.push( follow );
             usuarioAseguir.followers.push( uid );
+
+            const miUsuarioActualizado = await User.findByIdAndUpdate( uid, usuarioDB, { new: true } );
+            const usuarioAseguirActualizado = await User.findByIdAndUpdate( follow, usuarioAseguir, { new: true } );
+
+            res.json({
+                ok: true,
+                miUsuarioActualizado,
+                usuarioAseguirActualizado,
+                msg:`You followed @${ usuarioAseguirActualizado.username }`
+            })
             
          }
-
-        const miUsuarioActualizado = await User.findByIdAndUpdate( uid, usuarioDB, { new: true } );
-        const usuarioAseguirActualizado = await User.findByIdAndUpdate( follow, usuarioAseguir, { new: true } );
-    
-        res.json({
-            ok: true,
-            miUsuarioActualizado,
-            usuarioAseguirActualizado
-        })
-    
-    
         
     } catch (error) {
         return res.status(500).json({

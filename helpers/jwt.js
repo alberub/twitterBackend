@@ -36,9 +36,9 @@ const comprobarJWT = async( token = '' ) => {
         const { uid } = jwt.verify( token, process.env.JWT_SECRET );
         const user = await User.findById( uid );
 
-        if ( user ) {
+        if ( user ) {        
             return user;
-        } else {
+        } else {            
             return null;
         }
 

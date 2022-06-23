@@ -9,40 +9,38 @@ const login = async( req, res = response ) => {
 
     try {
 
-        // Verificar email
+            // Verificar email
 
-        const usuarioDB = await User.findOne({email});
+            const usuarioDB = await User.findOne({email});
 
-        if( !usuarioDB ) {
-            return res.status(404).json({
-                ok: false,
-                msg:'El usuario y/o contrasena no coinciden'
+            if( !usuarioDB ) {
+                return res.status(404).json({
+                    ok: false,
+                    msg:'Incorrect password'
+                });
+            }
+
+            // Verificar contrasena
+
+            const validPassword = bcrypt.compareSync( password, usuarioDB.password );
+            if( !validPassword ){
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Incorrect password'
+                });
+            }
+            
+            // Generar JWT
+
+            const token = await generarJWT( usuarioDB.id );
+
+            res.json({
+                ok: true,                
+                token        
             });
-        }
-
-        // Verificar contrasena
-
-        const validPassword = bcrypt.compareSync( password, usuarioDB.password );
-        if( !validPassword ){
-            return res.status(400).json({
-                ok: false,
-                msg: 'El usuario y/o contrasena no coinciden'
-            });
-        }
         
-        // Generar JWT
-
-        const token = await generarJWT( usuarioDB.id );
-
-        res.json({
-            ok: true,
-            token,
-            msg:'Mensaje de login'
-        });
-        
-        } catch (error) {
-            console.log(error);
-            response.status(500).json({
+        } catch (error) {                        
+            response.status(500).json({                
                 ok:false,
                 msg:'Error inesperado, hable con el administrador'
             });

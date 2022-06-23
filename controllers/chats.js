@@ -22,7 +22,8 @@ const newChat = async( req, res = response ) => {
                                    .populate( 'messages', 'message from createdAt' );
 
             return res.json({
-                exists: chat
+                ok: true,
+                chat: chat
             });
             
         } else if ( !chatExists[0] ) {
@@ -37,8 +38,8 @@ const newChat = async( req, res = response ) => {
 
 
             return res.json({
-                ok: true,
-                chat
+                ok: false,
+                chat: chat
             })
             
         }

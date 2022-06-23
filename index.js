@@ -48,11 +48,8 @@ app.get( '*', ( req, res ) => {
 // function sockets(){
 
 io.on('connection', ( socket ) => {
-    socketController( socket, io)
-});
-    
-// }
-
+    socketController( socket, io);        
+}); 
 
 server.listen( process.env.PORT, () => {
     console.log('Servidor ( server - socket io ) corriendo en puerto' + process.env.PORT);

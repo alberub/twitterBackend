@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { addBookmark ,createTweet, createReply, updateTweet, deleteTweet, getTweetById, getTweets, getData, getFollowingTweets, getReplies, retweet, updatePoll, getBookmark } = require('../controllers/tweets');
-const { validarJWT, profilePrivacy } = require('../middlewares/validar-jwt');
+const { validarJWT } = require('../middlewares/validar-jwt');
 const { validarCampos } = require('../middlewares/validar-campos');
 
 const router = Router();

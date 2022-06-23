@@ -13,6 +13,10 @@ const DataSchema = Schema({
     bookmark:[{
         type: Schema.Types.ObjectId,
         ref:'Tweet'
+    }],
+    subscribers:[{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
     }]
 });
 

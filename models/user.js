@@ -7,8 +7,7 @@ const UserSchema = Schema({
         required: true
     },
     lastName:{
-        type: String,
-        required: true
+        type: String
     },
     username:{
         type: String,
@@ -53,7 +52,6 @@ const UserSchema = Schema({
     }],
     privacity: {
         type: String,
-        required: true, 
         default: 'public'
     }
 

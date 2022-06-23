@@ -71,23 +71,31 @@ const getFollowingTweets = async( req, res = response) => {
 
 const getData = async( req, res = response ) => {
 
-    try {
-        
-        const userDB = await User.find({ "username": req.params.id });
-        
-        const tipo = req.params.tipo;
-        const user = userDB[0];
-        const uid = userDB[0]._id;
     
-    let data = [];
-    let users = [];
+    try {
+        const id = req.params.id;        
+
+        const user = await User.findOne({ "username": id });        
+        
+        const tipo = req.params.tipo;        
+        const uid = user.id;
+        
+        if (!user ) {
+            return res.status(404).json({
+                ok: false,
+                errorMessage:'User does not exist'
+            })
+        }      
+    
+        let data = [];
+        let users = [];
 
         switch (tipo) {
 
             case 'tweets':
 
-                const findDataModel = await Data.find({ "userId": uid });
-                const dataModelTweets = findDataModel[0].all;                
+                const dataUser = await Data.findOne({ "userId": uid });                
+                const dataModelTweets = dataUser.all;
                 
                 data = await Tweet.find({
                         "_id" : {
@@ -105,43 +113,45 @@ const getData = async( req, res = response ) => {
             case 'likes':
 
                 data = await Tweet.find({ "likes": uid })
-                                   .populate( 'userId', 'firstName username email img' );
-
-                data.forEach( e => {
-                    if ( e.likes.includes( uid ) === true ) {
-                        e.liked = true;
-                        return data;
-                    }
-                }) 
+                                   .populate( 'userId', 'firstName username email img' );                
 
             break;
 
             case 'with_replies':
 
-                data = 'tweets con respuestas';
+                data = [];
 
             break;
 
             case 'media':
 
-                data = 'tweets con imagenes';
+                const findDataModelMedia = await Data.findOne({ "userId": uid });
+                const dataModelTweetsMedia = findDataModelMedia.all;                
+                
+                data = await Tweet.find({
+                        "_id" : {
+                        "$in" : 
+                        dataModelTweetsMedia
+                        }
+                    })
+                    .populate('userId', 'firstName lastName username img followers followings imgPort');                                    
+
+                data.reverse();
 
             break;
 
             case 'followings':
 
-                if ( !userDB ) {
+                if ( !user ) {
                     return res.status(404).json({
                         ok: false,
-                        msg:'No hay usuario en la peticion'
+                        errorMessage:'User does not exist'
                     })
                 }
             
-                try {
-                
-                    const user = await User.findById( uid );
+                try {                                
 
-                    users = await User.find({ '_id': {
+                    users = await User.find({ "_id" : {
                         '$in': user.followings
                       }});
                                                               
@@ -149,7 +159,7 @@ const getData = async( req, res = response ) => {
                 } catch (error) {
                     res.status(404).json({
                         ok: false,
-                        msg:'Error en la peticion'
+                        errorMessage:'Error request'
                     })
                 }
 
@@ -157,18 +167,16 @@ const getData = async( req, res = response ) => {
 
             case 'followers':
 
-                if ( !userDB ) {
+                if ( !user ) {
                     return res.status(404).json({
                         ok: false,
-                        msg:'No hay usuario en la peticion'
+                        errorMessage:'User does not exist'
                     })
                 }
             
-                try {
-                
-                    const user = await User.findById( uid );
+                try {                                    
 
-                    users = await User.find({ '_id': {
+                    users = await User.find({ "_id" : {
                         '$in': user.followers
                       }});
                                                               
@@ -176,7 +184,7 @@ const getData = async( req, res = response ) => {
                 } catch (error) {
                     res.status(404).json({
                         ok: false,
-                        msg:'Error en la peticion'
+                        errorMessage:'Error request'
                     })
                 }
 
@@ -184,8 +192,7 @@ const getData = async( req, res = response ) => {
         
             default:
                 return res.status(400).json({
-                    ok: false,
-                    msg: 'La tabla tiene que ser likes/ replies/ tweets/ media'
+                    ok: false                    
                 });
         }
 
@@ -198,9 +205,9 @@ const getData = async( req, res = response ) => {
 
     } catch (error) {
         
-        return res.status(404).json({
+        return res.status(500).json({
             ok: false,
-            msg:'No hay usuario'
+            errorMessage:'Server error'
         })
     }
 
@@ -323,8 +330,6 @@ const createTweet = async(req, res = response ) => {
     }
 
 }
-
-// TODO: el tweet respuesta debe postear imagenes y demas caracteristicas
 
 const createReply = async(req, res = response ) => {
 
@@ -482,7 +487,7 @@ const updateTweet = async(req, res) => {
 
         res.status(500).json({
             ok: false,
-            msg: 'Hable con el administrador - update tweet'
+            errorMessage: 'Error server'
         })
         
     }
@@ -573,12 +578,12 @@ const deleteTweet = async(req, res) => {
 
                 return res.status(404).json({
                     ok:true,
-                    msg:'Tweet no encontrado'
+                    msg:'Tweet not found'
                 });
 
             } else if( tweet.userId._id != uid ){
                 return res.status(401).json({
-                    msg:'No tienes permitido hacer esto',
+                    msg:'Access denied',
                     tweet: tweet.userId._id,
                     uid
                 })
@@ -599,8 +604,7 @@ const deleteTweet = async(req, res) => {
                     await Tweet.findByIdAndDelete(id);
                 
                     return res.json({
-                        mag:'tweet y rspuesta eliminados',
-                        reply2
+                        mag:'Your Tweet was deleted'                        
                     })
                 
                 }
@@ -609,7 +613,7 @@ const deleteTweet = async(req, res) => {
 
             } else {
 
-                await Tweet.findByIdAndDelete(id);
+                const tweet = await Tweet.findByIdAndDelete(id);
                 const deleteFromData = await Data.find({ "userId": uid })                
                 const dataModelTweets = deleteFromData[0].all;
                 const dataModel = deleteFromData[0];                    
@@ -622,8 +626,8 @@ const deleteTweet = async(req, res) => {
                     await Data.findByIdAndUpdate( dataId, dataModel, { new: true } )
                 }
 
-                return res.json({
-                    msg:'El tweet ha sido eliminado'
+                return res.json({                    
+                    msg:'Your Tweet was deleted'
                 })
 
             }
@@ -649,7 +653,7 @@ const getTweetById = async(req, res = response ) => {
     try {
 
     const tweet = await Tweet.findById( idt )
-                                .populate('userId', 'username img firstName createdAt');
+                                .populate('userId', 'username img firstName createdAt bio');
 
     if (tweet.likes.includes( uid )) {
         tweet.liked = true;        
