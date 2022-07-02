@@ -49,7 +49,7 @@ const newChat = async( req, res = response ) => {
 
         res.json({
             ok:false,
-            msg:'Error newChat'
+            errorMessage:'Error server'
         })
             
     }   
@@ -81,7 +81,7 @@ const createMessages = async( req, res = response ) => {
     } catch (error) {
         res.json({
             ok: false,
-            msg:'Error server nm'
+            errorMessage:'Error server'
         })
     }
 
@@ -106,7 +106,7 @@ const getChats = async( req, res = response ) => {
     } catch (error) {
         res.json({
             ok:false,
-            mag:'Error en server'
+            errorMessage:'Error server'
         })
     }
 
@@ -140,7 +140,7 @@ const getMessages = async( req, res = response ) => {
 
         res.json({
             ok:false,
-            msg:'Error en server'
+            errorMessage:'Error server'
         })
         
     }
@@ -167,7 +167,7 @@ const unreadChat = async( req, res = response ) => {
         
         res.status.json({
             ok: false,
-            msg: 'chat not found'
+            errorMessage:'Error server'
         })
 
     }
@@ -200,7 +200,7 @@ const markAsSeen = async( req, res = response ) => {
     catch (error) {
         return res.status(400).json({
             ok: false,
-            msg:'message not found'
+            errorMessage:'Error server'
         })
     }
 

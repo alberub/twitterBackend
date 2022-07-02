@@ -4,11 +4,12 @@ const { generarJWT } = require('../helpers/jwt');
 const User = require('../models/user');
 const Data = require('../models/data');
 const Notify = require('../models/notification');
-const { db } = require('../models/user');
 
 const getUsuarios = async( req, res = response ) => {
 
     const desde = Number(req.query.desde) || 0;
+
+    try{
 
     const [ usuarios,total ] = await Promise.all([
 
@@ -24,6 +25,14 @@ const getUsuarios = async( req, res = response ) => {
             usuarios,
             total
         });
+
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            errorMessage: 'Error server'
+        })
+    }
+
 }
 
 const getUsuarioById = async( req, res = response ) => {
@@ -32,21 +41,15 @@ const getUsuarioById = async( req, res = response ) => {
     
     try {
 
-        const userName = await User.find({ 'username': id });
-
-        const user = userName[0];
+        const user = await User.findOne({ 'username': id });        
     
-            res.json(
-                user
-                )
+            res.json( user )
         
     } catch (error) {
-
         res.status(500).json({
             ok: false,
-            msg:'Ha habido un error, revisar logs'
+            errorMessage: 'Error server'
         })
-        
     }
 
 }
@@ -102,9 +105,9 @@ const validateRegistryData = async( req, res = response ) => {
         }
         
     } catch (error) {
-        res.status(404).json({
+        res.status(500).json({
             ok: false,
-            msg: 'revisar logs'
+            errorMessage: 'Error server'
         })
     }
 
@@ -122,7 +125,7 @@ const crearUsuario = async( req, res = response ) => {
 
                 return res.status(400).json({
                     ok: false,
-                    msg: 'El correo ya se encuentra registrado'
+                    msg: 'That email is already being used.'
                 })
             }
 
@@ -132,7 +135,7 @@ const crearUsuario = async( req, res = response ) => {
                     
                 return res.status(400).json({
                     ok: false,
-                    msg: 'El nombre de usuario no se encuentra disponible'
+                    msg: 'Username is not available'
                 })
                                     
             }        
@@ -164,7 +167,7 @@ const crearUsuario = async( req, res = response ) => {
         } catch (error) {
             res.status(500).json({
                 ok: false,
-                msg:'Error inesperado, revisar logs'
+                errorMessage: 'Error server'
             })
         }
 
@@ -172,51 +175,36 @@ const crearUsuario = async( req, res = response ) => {
 
 const actualizarUsuario = async( req, res = response) => {
 
-const uid = req.params.id;
+    const uid = req.params.id;
 
-try {
+    try {
 
-    const usuarioDB = await User.findById( uid );
+        const usuarioDB = await User.findById( uid );
 
-    if( !usuarioDB ) {
-        return res.status(404).json({
-            ok:false,
-            msg: 'No existe usuario con ese ID'
-        });
+        if( !usuarioDB ) {
+            return res.status(404).json({
+                ok:false,
+                msg: 'User error'
+            });
+        }
+
+        const { followers, password, email, ...campos} = req.body; 
+
+        const usuarioActualizado = await User.findByIdAndUpdate( uid, campos, { new: true} );
+
+        res.json({
+            ok: true,
+            user: usuarioActualizado
+        })
+
+
+    
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            errorMessage: 'Error server'
+        })
     }
-
-    const { followers, password, email, ...campos} = req.body;
-
-    // if ( usuarioDB.email !== email ) {
-
-        // const existeEmail = await User.findOne({ email });
-        
-        // if( existeEmail ) {
-            // return res.status(400).json({
-                // ok: false,
-                // msg: 'Ya existe un usuario registrado con ese email'
-            // });
-        // } else {
-            // campos.email = email;
-        // }
-    // }    
-
-    const usuarioActualizado = await User.findByIdAndUpdate( uid, campos, { new: true} );
-
-    res.json({
-        ok: true,
-        user: usuarioActualizado
-    })
-
-
-    
-} catch (error) {
-    
-    res.status(500).json({
-        ok: false,
-        msg: 'Error inesperado'
-    })
-}
 
 }
 
@@ -244,10 +232,9 @@ const borrarUsuario = async( req, res = response ) => {
         });
         
     } catch (error) {
-        
         res.status(500).json({
             ok: false,
-            msg: 'Error inesperado'
+            errorMessage: 'Error server'
         })
     }
 
@@ -278,7 +265,7 @@ const getSubscribers = async( req, res ) => {
     } catch (error) {
         res.status(500).json({
             ok: false,
-            mag:'Revisar logs'
+            errorMessage: 'Error server'
         })
     }
 
@@ -324,7 +311,7 @@ const subscribers = async( req, res = response ) => {
     } catch (error) {
         res.status(500).json({
             ok: false,
-            msg: 'Revisar logs'
+            errorMessage: 'Error server'
         })
     }
 

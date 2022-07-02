@@ -24,7 +24,7 @@ const validarJWT = ( req, res, next ) => {
 
         return res.status(401).json({
             ok:false,
-            msg:'Token invalido'
+            errorMessage:'Token invalido'
         });
          
      }

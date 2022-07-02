@@ -54,6 +54,10 @@ const addFollow = async( req, res = response) => {
 
     const uid = req.uid;
     const follow = req.params.id;
+
+    if (uid === follow) {
+        return;
+    }
     
     try {
     
@@ -106,7 +110,7 @@ const addFollow = async( req, res = response) => {
     } catch (error) {
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado'
+            errorMessage:'Error server'
         })
     }
     

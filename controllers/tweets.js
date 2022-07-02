@@ -5,68 +5,70 @@ const User = require('../models/user');
 
 const getTweets = async(req, res = response ) => {
 
-    const uid = req.uid;
-    const findDataModel = await Data.find({ "userId": uid });
-    const dataModelTweets = findDataModel[0].all;
+    try {        
 
-    // const { getTweets } = req.body;
+        const uid = req.uid;
+        const findDataModel = await Data.findOne({ "userId": uid });
+        const dataModelTweets = findDataModel.all;
 
-    const tweets = await Tweet.find({
-        "_id" : {
-          "$in" : 
-          dataModelTweets
-         }
-      })
-      .sort({ createdAt: -1 })
-      .populate('userId', 'firstName lastName username img followers followings imgPort');
+        const tweets = await Tweet.find({
+            "_id" : {
+            "$in" : 
+            dataModelTweets
+            }
+        })
+        .sort({ createdAt: -1 })
+        .populate('userId', 'firstName lastName username img followers followings imgPort');
+        
+        res.json({
+            ok: true,
+            tweets,
+            // tweets: tweets.option1,
+            dataModelTweets
+        });
 
-    // const misTweets = await Tweet.find({"userId": userId }).sort({ createdAt: -1 })
-    //                                     .populate('userId', 'firstName username');
-    
-    res.json({
-        ok: true,
-        tweets,
-        tweets: tweets.option1,
-        dataModelTweets
-    });
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            errorMessage:'Error server'
+        })
+    }
+
 }
 
 const getFollowingTweets = async( req, res = response) => {
 
-    const uid =  req.uid;
-    const { users } = req.body;
-    
-    if ( !users ) {
-        return res.status(500).json({
-            mag:'No hay usuarios en el body de la peticion'
+    try {
+
+        const uid =  req.uid;
+        const { users } = req.body;
+        
+        if ( !users && uid ) {
+            return res.status(500).json({
+                mag:'No hay usuarios en el body de la peticion'
+            })
+        }
+
+        const tweets = await Tweet.find({
+        "userId" : {
+            "$in" : 
+            users
+        }
+        })
+        .sort({ createdAt: -1 })
+        .populate('userId', 'firstName lastName username img followers followings imgPort')
+        
+        res.status(200).json({        
+            tweets
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            errorMessage:'Error server'
         })
     }
 
-    const tweets = await Tweet.find({
-      "userId" : {
-        "$in" : 
-          users
-       }
-    })
-    .sort({ createdAt: -1 })
-    .populate('userId', 'firstName lastName username img followers followings imgPort')
-    
-    // .skip( 0 )
-    // .limit( 6  )
-
-    // TODO: hacer esta funcion en el frontend
-
-    // tweets.forEach( e => {
-    //     if (e.likes.includes( uid ) === true ) {
-    //         e.liked = true;
-    //         return tweets;
-    //     } 
-    // })
-    
-    res.status(200).json({
-        msg:'oko',
-        tweets
-    })
 }
 
 const getData = async( req, res = response ) => {
@@ -239,9 +241,9 @@ const getBookmark = async( req, res = response ) => {
 
     } catch (error) {
         
-        return res.status(404).json({
+        return res.status(500).json({
             ok: false,
-            msg:'Error bookmark'
+            errorMessage:'Server error'
         })
     }
 
@@ -287,10 +289,10 @@ const addBookmark = async(req, res = response ) => {
         });
 
     } catch (error) {
-        res.status(500).json({
+        
+        return res.status(500).json({
             ok: false,
-            msg:'Error, hable con el administrador - crear tweet',
-            uid
+            errorMessage:'Server error'
         })
     }
 
@@ -303,8 +305,7 @@ const createTweet = async(req, res = response ) => {
         
         const uid = req.uid;
 
-        const getData = await Data.find({ "userId": uid });
-        const addData = getData[0];
+        const addData = await Data.findOne({ "userId": uid });        
 
         const tweet = new Tweet({ userId:uid, ...req.body });
         const tweetDB = await tweet.save();
@@ -318,14 +319,15 @@ const createTweet = async(req, res = response ) => {
 
         res.json({
             ok:true,
+            msg:'Your Tweet was sent.',
             tweet: tweet2
         });
 
     } catch (error) {
-        res.status(500).json({
+        
+        return res.status(500).json({
             ok: false,
-            msg:'Error, hable con el administrador - crear tweet',
-            uid
+            errorMessage:'Server error'
         })
     }
 
@@ -378,10 +380,10 @@ const createReply = async(req, res = response ) => {
         }
 
     } catch (error) {
-        res.status(500).json({
+        
+        return res.status(500).json({
             ok: false,
-            msg:'Error, hable con el administrador - crear tweet',
-            uid
+            errorMessage:'Server error'
         })
     }
 
@@ -430,9 +432,10 @@ const retweet = async( req, res ) => {
         })
         
     } catch (error) {
-        res.json({
+        
+        return res.status(500).json({
             ok: false,
-            msg: error
+            errorMessage:'Server error'
         })
     }
 
@@ -553,12 +556,11 @@ const updatePoll = async(req, res) => {
         }
         
     } catch (error) {
-
-        res.status(500).json({
-            ok: false,
-            msg: 'Hable con el administrador - update tweet'
-        })
         
+        return res.status(500).json({
+            ok: false,
+            errorMessage:'Server error'
+        })
     }
 
     
@@ -633,13 +635,11 @@ const deleteTweet = async(req, res) => {
             }
 
         } catch (error) {
-
-            return res.json({
-                ok:false,
-                msg:'Error de server'
-            });
-
-
+        
+            return res.status(500).json({
+                ok: false,
+                errorMessage:'Server error'
+            })
         }
 
         
@@ -652,24 +652,25 @@ const getTweetById = async(req, res = response ) => {
     
     try {
 
-    const tweet = await Tweet.findById( idt )
-                                .populate('userId', 'username img firstName createdAt bio');
+        const tweet = await Tweet.findById( idt )
+                                    .populate('userId', 'username img firstName createdAt bio');
 
-    if (tweet.likes.includes( uid )) {
-        tweet.liked = true;        
-    }
+        if (tweet.likes.includes( uid )) {
+            tweet.liked = true;        
+        }
 
-    res.json({ 
-        ok:true,
-        tweet
-    });
+        res.json({ 
+            ok:true,
+            tweet
+        });
         
     } catch (error) {
-        res.json({
-            ok:false,
-            msg: 'Hable con el administrador'
+            
+        return res.status(500).json({
+            ok: false,
+            errorMessage:'Server error'
         })
-    }
+}
 
     
 }
@@ -685,28 +686,38 @@ const getReplies = async( req, res = response) => {
         })
     }
 
-    // const tweets = await Tweet.findById( users )
+    try{
 
-    const tweets = await Tweet.find({
-      "_id" : {
-        "$in" : 
-        getReplies
-       }
-    })
-    .sort({ createdAt: -1 })
-    .populate('userId', 'firstName lastName username img followers followings imgPort');
+        const tweets = await Tweet.find({
+        "_id" : {
+            "$in" : 
+            getReplies
+        }
+        })
+        .sort({ createdAt: -1 })
+        .populate('userId', 'firstName lastName username img followers followings imgPort');
 
-    tweets.forEach( e => {
-        if (e.likes.includes( uid ) === true ) {
-            e.liked  = true;
-            return tweets;
-        } 
-    })
-    
-    res.status(200).json({
-        msg:'ok',
-        tweets
-    })
+        tweets.forEach( e => {
+            if (e.likes.includes( uid ) === true ) {
+                e.liked  = true;
+                return tweets;
+            } 
+        })
+        
+        res.status(200).json({
+            msg:'ok',
+            tweets
+        })
+
+
+    } catch (error) {
+            
+        return res.status(500).json({
+            ok: false,
+            errorMessage:'Server error'
+        })
+    }
+
 }
 
 

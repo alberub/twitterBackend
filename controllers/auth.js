@@ -42,7 +42,7 @@ const login = async( req, res = response ) => {
         } catch (error) {                        
             response.status(500).json({                
                 ok:false,
-                msg:'Error inesperado, hable con el administrador'
+                errorMessage:'Error inesperado, hable con el administrador'
             });
         }
 

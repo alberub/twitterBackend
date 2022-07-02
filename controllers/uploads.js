@@ -98,7 +98,7 @@ const fileUploadCloudinary = async( req, res = response ) => {
     if( !tiposValidos.includes(tipo)){
         return res.status(400).json({
             ok:false,
-            msg:'No es un medico, usuario u hospital (tipo)'
+            errorMessage:'invalid type'
         });
     }
 
@@ -246,7 +246,7 @@ const fileUploadCloudinary = async( req, res = response ) => {
                 default:
                     return res.status(400).json({
                         ok: false,
-                        msg: 'ha ocurrido un error',
+                        errorMessage: 'ha ocurrido un error',
                     });
         
         }
