@@ -1,5 +1,8 @@
 node_modules/
 
+
+.env
+
 uploads/hospitales/**.jpg
 uploads/hospitales/**.png
 uploads/hospitales/**.gif

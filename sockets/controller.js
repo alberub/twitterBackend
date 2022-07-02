@@ -1,7 +1,5 @@
-const { createMessages } = require("../controllers/chats");
 const { comprobarJWT } = require("../helpers/jwt");
 const Message = require("../models/message");
-const ChatMensajes = require('../models/chat-mensajes');
 const Chat = require("../models/chat");
 const Notify = require("../models/notification");
 
