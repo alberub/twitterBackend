@@ -121,7 +121,8 @@ const getData = async( req, res = response ) => {
 
             case 'with_replies':
 
-                data = [];
+                data = await Tweet.find({ $and:[{ "reply": true}, {"userId": uid }]})
+                                  .populate('userId', 'firstName lastName username img followers followings imgPort');                
 
             break;
 
